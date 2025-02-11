@@ -27,17 +27,15 @@
                 this.size = 1.0; // Size multiplier
                 this.velocity = { x: 0, y: 0 };
                 this.onGround = false;
-                this.rotation = 0;
-                this.rollSpeed = 0;
             }
 
             draw(ctx) {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 10 * this.size, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, 15 * this.size, 0, Math.PI * 2);
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fill();
                 ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.stroke();
             }
         }
@@ -86,7 +84,6 @@
                 this.scrollSpeed = 1;
                 this.snowball = new Snowball(50, 100);
                 this.obstacles = [];
-                this.lastSizeIncrease = 0;
 
                 // Physics constants
                 this.gravity = 0.5;
@@ -118,19 +115,13 @@
                 // Gradual speed increase
                 this.scrollSpeed = 1 + Math.min(this.frameCount / 1000, 4);
 
-                // Grow snowball every 20 seconds
-                if (this.frameCount - this.lastSizeIncrease > 1200) {
-                    this.snowball.size = Math.min(this.snowball.size + 0.2, 3);
-                    this.lastSizeIncrease = this.frameCount;
-                }
-
                 // Update snowball physics
                 this.snowball.velocity.y += this.gravity;
                 this.snowball.y += this.snowball.velocity.y;
 
                 // Ground collision
-                if (this.snowball.y >= 100 - 10 * this.snowball.size) {
-                    this.snowball.y = 100 - 10 * this.snowball.size;
+                if (this.snowball.y >= 100 - 15 * this.snowball.size) {
+                    this.snowball.y = 100 - 15 * this.snowball.size;
                     this.snowball.velocity.y = 0;
                     this.snowball.onGround = true;
                 }
@@ -140,11 +131,11 @@
                     obstacle.x -= this.scrollSpeed;
 
                     // Check collision
-                    if (this.snowball.x + 10 * this.snowball.size > obstacle.x &&
-                        this.snowball.x - 10 * this.snowball.size < obstacle.x + obstacle.width &&
-                        this.snowball.y + 10 * this.snowball.size > obstacle.y) {
+                    if (this.snowball.x + 15 * this.snowball.size > obstacle.x &&
+                        this.snowball.x - 15 * this.snowball.size < obstacle.x + obstacle.width &&
+                        this.snowball.y + 15 * this.snowball.size > obstacle.y) {
 
-                        if (obstacle.type === 'fire' || (obstacle.type === 'crack' && this.snowball.y + 10 * this.snowball.size >= obstacle.y)) {
+                        if (obstacle.type === 'fire' || (obstacle.type === 'crack' && this.snowball.y + 15 * this.snowball.size >= obstacle.y)) {
                             this.endGame();
                         }
                     }

@@ -30,6 +30,16 @@
                 this.rotation = 0;
                 this.rollSpeed = 0;
             }
+
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 10 * this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
         }
 
         class Obstacle {
@@ -38,7 +48,27 @@
                 this.x = x;
                 this.y = 100; // Ground level for simplicity
                 this.width = width;
-                this.height = type === 'fire' ? 10 : 5;
+                this.height = type === 'fire' ? 20 : 5;
+            }
+
+            draw(ctx) {
+                if (this.type === 'fire') {
+                    ctx.fillStyle = '#FF4500';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x + this.width / 2, this.y - this.height);
+                    ctx.lineTo(this.x + this.width, this.y);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (this.type === 'crack') {
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x + this.width / 2, this.y + this.height);
+                    ctx.lineTo(this.x + this.width, this.y);
+                    ctx.stroke();
+                }
             }
         }
 
@@ -53,7 +83,7 @@
                 this.canvas.style.height = '300px';
 
                 this.frameCount = 0;
-                this.scrollSpeed = 2;
+                this.scrollSpeed = 1;
                 this.snowball = new Snowball(50, 100);
                 this.obstacles = [];
                 this.lastSizeIncrease = 0;
@@ -84,6 +114,9 @@
 
             update() {
                 this.frameCount++;
+
+                // Gradual speed increase
+                this.scrollSpeed = 1 + Math.min(this.frameCount / 1000, 4);
 
                 // Grow snowball every 20 seconds
                 if (this.frameCount - this.lastSizeIncrease > 1200) {
@@ -140,15 +173,11 @@
 
                 // Draw obstacles
                 this.obstacles.forEach(obstacle => {
-                    this.ctx.fillStyle = obstacle.type === 'fire' ? '#FF4500' : '#000';
-                    this.ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                    obstacle.draw(this.ctx);
                 });
 
                 // Draw snowball
-                this.ctx.beginPath();
-                this.ctx.arc(this.snowball.x, this.snowball.y, 10 * this.snowball.size, 0, Math.PI * 2);
-                this.ctx.fillStyle = '#FFFFFF';
-                this.ctx.fill();
+                this.snowball.draw(this.ctx);
 
                 // Draw score
                 this.ctx.fillStyle = '#000';

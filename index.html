@@ -1,10 +1,7 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snowball Run</title>
+    <title>Snowball Game</title>
     <style>
         body {
             margin: 0;
@@ -13,26 +10,271 @@
             align-items: center;
             min-height: 100vh;
             background: #1a1a1a;
-            font-family: Arial, sans-serif;
-            color: white;
         }
-        .game-container {
-            text-align: center;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .game-frame {
+        canvas {
             border: 2px solid #333;
-            border-radius: 8px;
-            background: #000;
+            image-rendering: pixelated;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>Snowball Run</h1>
-        <iframe class="game-frame" src="https://snowball.philcannon.repl.co" width="800" height="600" frameborder="0"></iframe>
-    </div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        class Sprites {
+            constructor() {
+                this.image = new Image();
+                this.image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWElEQVQ4T2NkIBEwkqifYfAb8P///39kZGT8RadJdBuQDWDAZwgLugHIJqEbwszMzIhsCNwAZJuQ2eguYUJ3AXLY4HMBPFqIDQNkA/5TmphwxsFwNwAAYH0YEQyEL4QAAAAASUVORK5CYII=';
+                this.loaded = false;
+                this.image.onload = () => {
+                    this.loaded = true;
+                };
+            }
+
+            drawSprite(ctx, x, y, u, v, w, h, scale = 1, rotation = 0) {
+                if (!this.loaded) return;
+                
+                ctx.save();
+                ctx.translate(x + (w * scale) / 2, y + (h * scale) / 2);
+                ctx.rotate(rotation);
+                ctx.scale(scale, scale);
+                ctx.drawImage(this.image, u, v, w, h, -w/2, -h/2, w, h);
+                ctx.restore();
+            }
+        }
+
+        class Snowball {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = 1.0;  // Size multiplier
+                this.velocity = { x: 0, y: 0 };
+                this.onGround = false;
+                this.rotation = 0;
+                this.rollSpeed = 0;
+            }
+        }
+
+        class Obstacle {
+            constructor(type, x, y) {
+                this.type = type; // 'fire' or 'water'
+                this.x = x;
+                this.y = y;
+                this.width = 16;
+                this.height = 16;
+                this.active = true;
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                this.canvas.width = 160;
+                this.canvas.height = 120;
+                this.canvas.style.width = '480px';
+                this.canvas.style.height = '360px';
+                
+                this.frameCount = 0;
+                this.score = 0;
+                this.scrollSpeed = 1;
+                this.sprites = new Sprites();
+
+                // Game objects
+                this.snowball = new Snowball(40, 60);
+                this.obstacles = [];
+                this.collectibles = [];
+                
+                // Physics constants
+                this.gravity = 0.5;
+                this.groundY = this.canvas.height - 20;
+                this.jumpForce = -8;
+                
+                // Input handling
+                this.keys = new Set();
+                document.addEventListener('keydown', (e) => this.keys.add(e.key.toLowerCase()));
+                document.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+                
+                // Start game loop
+                this.lastTime = 0;
+                requestAnimationFrame(this.gameLoop.bind(this));
+            }
+            
+            spawnObstacle() {
+                if (Math.random() < 0.02) {
+                    const type = Math.random() < 0.7 ? 'fire' : 'water';
+                    this.obstacles.push(new Obstacle(
+                        type,
+                        this.canvas.width,
+                        this.groundY - (type === 'water' ? 8 : 16)
+                    ));
+                }
+            }
+
+            spawnCollectible() {
+                if (Math.random() < 0.03) {
+                    this.collectibles.push({
+                        x: this.canvas.width,
+                        y: this.groundY - 16,
+                        collected: false
+                    });
+                }
+            }
+            
+            update() {
+                this.frameCount++;
+                
+                // Increase difficulty over time
+                this.scrollSpeed = 1 + Math.floor(this.frameCount / 1000) * 0.5;
+
+                // Handle input
+                if (this.keys.has('w') && this.snowball.onGround) {
+                    this.snowball.velocity.y = this.jumpForce;
+                    this.snowball.onGround = false;
+                }
+                if (this.keys.has('a')) this.snowball.x -= 2;
+                if (this.keys.has('d')) this.snowball.x += 2;
+
+                // Update snowball physics
+                this.snowball.velocity.y += this.gravity;
+                this.snowball.y += this.snowball.velocity.y;
+                
+                // Ground collision
+                if (this.snowball.y > this.groundY - 16 * this.snowball.size) {
+                    this.snowball.y = this.groundY - 16 * this.snowball.size;
+                    this.snowball.velocity.y = 0;
+                    this.snowball.onGround = true;
+                }
+
+                // Roll animation when moving
+                if (this.snowball.onGround) {
+                    this.snowball.rollSpeed = (this.keys.has('d') ? 0.2 : 0.1) * this.scrollSpeed;
+                    this.snowball.rotation += this.snowball.rollSpeed;
+                }
+
+                // Spawn and update obstacles
+                this.spawnObstacle();
+                this.spawnCollectible();
+
+                // Update obstacles
+                this.obstacles = this.obstacles.filter(obstacle => {
+                    obstacle.x -= this.scrollSpeed;
+                    
+                    // Check collision
+                    if (this.checkCollision(obstacle)) {
+                        if (obstacle.type === 'fire') {
+                            this.snowball.size = Math.max(0.5, this.snowball.size - 0.2);
+                            return false;
+                        } else if (obstacle.type === 'water' && this.snowball.velocity.y > 0) {
+                            // Game over condition
+                            this.resetGame();
+                            return false;
+                        }
+                    }
+                    
+                    return obstacle.x > -obstacle.width;
+                });
+
+                // Update collectibles
+                this.collectibles = this.collectibles.filter(collectible => {
+                    collectible.x -= this.scrollSpeed;
+                    
+                    // Check collection
+                    if (!collectible.collected && this.checkCollisionPoint(collectible.x, collectible.y)) {
+                        this.snowball.size = Math.min(2.0, this.snowball.size + 0.1);
+                        this.score += 100;
+                        collectible.collected = true;
+                    }
+                    
+                    return collectible.x > -16 && !collectible.collected;
+                });
+
+                // Update score
+                this.score += this.scrollSpeed;
+            }
+            
+            checkCollision(obstacle) {
+                const snowballRadius = 8 * this.snowball.size;
+                return (
+                    this.snowball.x + snowballRadius > obstacle.x &&
+                    this.snowball.x - snowballRadius < obstacle.x + obstacle.width &&
+                    this.snowball.y + snowballRadius > obstacle.y &&
+                    this.snowball.y - snowballRadius < obstacle.y + obstacle.height
+                );
+            }
+
+            checkCollisionPoint(x, y) {
+                const snowballRadius = 8 * this.snowball.size;
+                const dx = this.snowball.x - x;
+                const dy = this.snowball.y - y;
+                return Math.sqrt(dx * dx + dy * dy) < snowballRadius;
+            }
+            
+            resetGame() {
+                this.snowball = new Snowball(40, 60);
+                this.obstacles = [];
+                this.collectibles = [];
+                this.score = 0;
+                this.frameCount = 0;
+                this.scrollSpeed = 1;
+            }
+            
+            draw() {
+                // Clear and draw background
+                this.ctx.fillStyle = '#87CEEB';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw ground
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.fillRect(0, this.groundY, this.canvas.width, this.canvas.height - this.groundY);
+
+                // Draw obstacles
+                this.obstacles.forEach(obstacle => {
+                    this.ctx.fillStyle = obstacle.type === 'fire' ? '#FF4400' : '#0088FF';
+                    this.ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                });
+
+                // Draw collectibles
+                this.collectibles.forEach(collectible => {
+                    this.ctx.fillStyle = '#FFFFFF';
+                    this.ctx.beginPath();
+                    this.ctx.arc(collectible.x, collectible.y, 4, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // Draw snowball
+                if (this.sprites.loaded) {
+                    this.sprites.drawSprite(
+                        this.ctx,
+                        this.snowball.x - 8 * this.snowball.size,
+                        this.snowball.y - 8 * this.snowball.size,
+                        0, 0, 16, 16,
+                        this.snowball.size,
+                        this.snowball.rotation
+                    );
+                }
+
+                // Draw score
+                this.ctx.font = '8px Arial';
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillText(`Score: ${Math.floor(this.score)}`, 5, 10);
+                this.ctx.fillText(`Size: ${(this.snowball.size * 100).toFixed(0)}%`, 5, 20);
+            }
+            
+            gameLoop(timestamp) {
+                const deltaTime = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+                
+                this.update();
+                this.draw();
+                
+                requestAnimationFrame(this.gameLoop.bind(this));
+            }
+        }
+
+        window.onload = () => {
+            new Game();
+        };
+    </script>
 </body>
 </html>

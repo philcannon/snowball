@@ -42,11 +42,37 @@ body {
 }
 
 #leaderboard {
-    margin-top: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 1rem;
+    margin-top: 10px; /* Reduced from 20px for tighter layout */
+}
+
+#leaderboard-inner {
+    background: rgba(240, 240, 240, 0.9); /* Lighter, snowy feel */
+    border-radius: 10px;
+    padding: 10px 15px;
+    box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.2), /* Subtle neumorphic */
+        inset 0 0.05em 0.1em rgba(255, 255, 255, 0.5);
+    color: #333; /* Darker text for contrast */
+    text-shadow: none;
+}
+
+#leaderboard h2 {
+    font-size: 1.2rem;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    color: #222;
+}
+
+#leaderboard ol {
+    margin: 0;
+    padding-left: 20px;
+    list-style-position: inside;
+    font-size: 0.9rem; /* Slightly smaller for elegance */
+}
+
+#leaderboard li {
+    margin: 4px 0; /* Better spacing */
+    color: #444;
+    line-height: 1.2;
 }
 
 #gameOverPopup {
@@ -73,7 +99,7 @@ button {
     position: relative;
     border-radius: 999vw;
     background-color: rgba(0, 0, 0, 0.75);
-    box-shadow: -0.1em -0.1em 0.1em -0.05em rgba(5, 5, 5, 0.25), /* Reduced shadow */
+    box-shadow: -0.1em -0.1em 0.1em -0.05em rgba(5, 5, 5, 0.25),
         0.025em 0.025em 0.045em 0 rgba(5, 5, 5, 0.1);
 }
 
@@ -81,7 +107,7 @@ button::after {
     content: "";
     position: absolute;
     z-index: 0;
-    width: calc(100% + 0.2em); /* Slightly smaller */
+    width: calc(100% + 0.2em);
     height: calc(100% + 0.2em);
     top: -0.1em;
     left: -0.1em;
@@ -101,7 +127,7 @@ button .button-outer {
     border-radius: inherit;
     transition: box-shadow 300ms ease;
     will-change: box-shadow;
-    box-shadow: 0 0.03em 0.03em -0.005em rgba(5, 5, 5, 1), /* Reduced shadow */
+    box-shadow: 0 0.03em 0.03em -0.005em rgba(5, 5, 5, 1),
         0 0.005em 0.005em -0.005em rgba(5, 5, 5, 0.5),
         0.1em 0.2em 0.05em -0.005em rgba(5, 5, 5, 0.25);
 }
@@ -112,11 +138,11 @@ button:hover .button-outer {
 }
 
 .button-inner {
-    --inset: 0.025em; /* Slightly smaller inset */
+    --inset: 0.025em;
     position: relative;
     z-index: 1;
     border-radius: inherit;
-    padding: 0.3em 0.8em; /* Further reduced from 0.5em 1em */
+    padding: 0.3em 0.8em;
     background-image: linear-gradient(135deg,
             rgba(230, 230, 230, 1),
             rgba(180, 180, 180, 1));
@@ -127,53 +153,4 @@ button:hover .button-outer {
     clip-path: inset(0 0 0 0 round 999vw);
     box-shadow:
         0 0 0 0 inset rgba(5, 5, 5, 0.1),
-        -0.03em -0.03em 0.03em 0 inset rgba(5, 5, 5, 0.25), /* Reduced shadow */
-        0 0 0 0 inset rgba(5, 5, 5, 0.1),
-        0 0 0.03em 0.1em inset rgba(255, 255, 255, 0.25),
-        0.015em 0.03em 0.05em 0 inset rgba(255, 255, 255, 1),
-        0.08em 0.08em 0.08em inset rgba(255, 255, 255, 0.25),
-        -0.05em -0.15em 0.15em 0.05em inset rgba(5, 5, 5, 0.25);
-}
-
-button:hover .button-inner {
-    clip-path: inset(clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px) round 999vw);
-    box-shadow:
-        0.05em 0.1em 0.03em 0 inset rgba(5, 5, 5, 0.75),
-        -0.015em -0.02em 0.03em 0.015em inset rgba(5, 5, 5, 0.5),
-        0.15em 0.15em 0.1em 0 inset rgba(5, 5, 5, 0.5),
-        0 0 0.03em 0.3em inset rgba(255, 255, 255, 0.15),
-        0 0 0 0 inset rgba(255, 255, 255, 1),
-        0.08em 0.08em 0.08em inset rgba(255, 255, 255, 0.25),
-        -0.05em -0.08em 0.1em 0.05em inset rgba(5, 5, 5, 0.25);
-}
-
-button .button-inner span {
-    position: relative;
-    z-index: 4;
-    font-family: "Inter", sans-serif;
-    letter-spacing: -0.05em;
-    font-weight: 500;
-    color: rgba(0, 0, 0, 0);
-    background-image: linear-gradient(135deg,
-            rgba(25, 25, 25, 1),
-            rgba(75, 75, 75, 1));
-    -webkit-background-clip: text;
-    background-clip: text;
-    transition: transform 250ms ease;
-    display: block;
-    will-change: transform;
-    text-shadow: rgba(0, 0, 0, 0.1) 0 0 0.1em;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    font-size: 0.6rem; /* Further reduced from 0.8rem */
-}
-
-button:hover .button-inner span {
-    transform: scale(0.975);
-}
-
-button:active .button-inner {
-    transform: scale(0.975);
-}
+        -0.03em -0.03em 0.03em 0 inset rgba(5, 5, 5, 0.25),

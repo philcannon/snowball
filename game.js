@@ -23,6 +23,7 @@ let maxChargeTime = 500;
 let isCharging = false;
 let speed = 2;
 let obstacles = [];
+let snowflakes = [];
 let score = 0;
 let gameRunning = false;
 let lastTime = 0;
@@ -42,6 +43,12 @@ function startGame() {
     speed = 2;
     timeElapsed = 0;
     obstacles = [];
+    snowflakes = Array(50).fill().map(() => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2 + 1,
+        speed: Math.random() * 2 + 1
+    }));
     firstObstacleSpawned = false;
     snowball = { x: 100, y: 350, radius: 20, vy: 0, vx: 0 };
     requestAnimationFrame(gameLoop);
@@ -78,19 +85,25 @@ function update(delta) {
         jumpCharge = Math.min(jumpCharge + delta * 1000, maxChargeTime);
     }
 
-    // Obstacle spawning
-    let spawnChance = 0.01 + timeElapsed * 0.005;
-    let minGap = Math.max(200 - timeElapsed * 10, 100);
+    // Update snowflakes
+    snowflakes.forEach(s => {
+        s.y += s.speed;
+        if (s.y > canvas.height) {
+            s.y = -s.radius;
+            s.x = Math.random() * canvas.width;
+        }
+    });
 
+    // Obstacle spawning
+    let minGap = 2; // 2 seconds between obstacles
     if (!firstObstacleSpawned && score >= 50 && score <= 80) {
-        // Spawn first obstacle between score 50 and 80
-        if (Math.random() < 0.1) { // Higher chance for first spawn
-            let size = Math.random() * 20 + 20; // Small initial obstacle
+        if (Math.random() < 0.1) {
+            let size = Math.random() * 20 + 20;
             obstacles.push({ x: canvas.width, y: canvas.height - size, width: size, height: size });
             lastObstacleTime = timeElapsed;
             firstObstacleSpawned = true;
         }
-    } else if (firstObstacleSpawned && Math.random() < spawnChance && (timeElapsed - lastObstacleTime) * speed > minGap) {
+    } else if (firstObstacleSpawned && (timeElapsed - lastObstacleTime) >= minGap) {
         let maxSize = Math.min(40 + timeElapsed * 5, 80);
         let size = Math.random() * (maxSize - 20) + 20;
         obstacles.push({ x: canvas.width, y: canvas.height - size, width: size, height: size });
@@ -119,6 +132,14 @@ function update(delta) {
 function draw() {
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw snowflakes
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    snowflakes.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+    });
 
     ctx.fillStyle = '#b0bec5';
     ctx.fillRect(0, canvas.height - 50, canvas.width, 50);

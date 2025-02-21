@@ -31,10 +31,7 @@ let timeElapsed = 0;
 let lastObstacleTime = 0;
 let firstObstacleSpawned = false;
 
-const MAX_SNOWBALL_X = canvas.width / 2; // 400px
-
-// Leaderboard
-let leaderboard = JSON.parse(localStorage.getItem('snowballLeaderboard')) || [];
+const MAX_SNOWBALL_X = canvas.width / 2;
 
 function startGame() {
     gameRunning = true;
@@ -71,10 +68,8 @@ function gameLoop(timestamp) {
 }
 
 function update(delta) {
-    // Snowball physics (vertical only)
     snowball.vy += gravity;
     snowball.y += snowball.vy;
-    // Cap snowball.x to stay in left half
     snowball.x = Math.min(snowball.x, MAX_SNOWBALL_X);
 
     if (snowball.y + snowball.radius > canvas.height) {
@@ -86,10 +81,9 @@ function update(delta) {
         jumpCharge = Math.min(jumpCharge + delta * 1000, maxChargeTime);
     }
 
-    // Update snowflakes
     snowflakes.forEach(s => {
         s.y += s.speed;
-        s.x -= speed * 0.5; // Slower scroll for depth
+        s.x -= speed * 0.5;
         if (s.y > canvas.height) {
             s.y = -s.radius;
             s.x = Math.random() * canvas.width;
@@ -97,8 +91,7 @@ function update(delta) {
         if (s.x < -s.radius) s.x = canvas.width + s.radius;
     });
 
-    // Obstacle spawning
-    let minGap = 2; // 2 seconds between obstacles
+    let minGap = 2;
     if (!firstObstacleSpawned && score >= 50 && score <= 80) {
         if (Math.random() < 0.1) {
             let size = Math.random() * 20 + 20;
@@ -113,7 +106,6 @@ function update(delta) {
         lastObstacleTime = timeElapsed;
     }
 
-    // Move obstacles
     obstacles.forEach((ob, i) => {
         ob.x -= speed;
         if (ob.x + ob.width < 0) obstacles.splice(i, 1);
@@ -133,10 +125,11 @@ function update(delta) {
 }
 
 function draw() {
-    ctx.fillStyle = '#fff';
+    // Clear canvas with a faint background to let body color show through
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Slightly transparent white
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw snowflakes
+    // Draw snowflakes first
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     snowflakes.forEach(s => {
         ctx.beginPath();
@@ -144,9 +137,11 @@ function draw() {
         ctx.fill();
     });
 
+    // Draw ground
     ctx.fillStyle = '#b0bec5';
     ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
 
+    // Draw snowball
     ctx.beginPath();
     ctx.arc(snowball.x, snowball.y, snowball.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#e0f7fa';
@@ -155,6 +150,7 @@ function draw() {
     ctx.fill();
     ctx.shadowBlur = 0;
 
+    // Draw obstacles
     obstacles.forEach(ob => {
         ctx.fillStyle = '#616161';
         ctx.fillRect(ob.x, ob.y, ob.width, ob.height);
@@ -207,7 +203,6 @@ document.addEventListener('keyup', (e) => {
         isCharging = false;
         let chargeFactor = jumpCharge / maxChargeTime;
         snowball.vy = baseJumpForce + (maxJumpForce - baseJumpForce) * chargeFactor;
-        // No vx boost; scrolling handled by background
     }
 });
 

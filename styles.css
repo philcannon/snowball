@@ -32,8 +32,25 @@ body {
     border-radius: 5px;
 }
 
+#gameOverPopup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
 button {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
+    margin: 5px;
+}
+
+.hidden {
+    display: none;
 }

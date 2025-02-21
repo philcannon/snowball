@@ -12,10 +12,16 @@
             <h1>Snowball</h1>
             <p>Score: <span id="score">0</span></p>
             <button id="startButton">Start</button>
-            <div id="leaderboard">
+            <button id="leaderboardButton">Show Leaderboard</button>
+            <div id="leaderboard" class="hidden">
                 <h2>Top 10 Scores</h2>
                 <ol id="leaderboardList"></ol>
             </div>
+        </div>
+        <div id="gameOverPopup" class="hidden">
+            <h2>Game Over</h2>
+            <p>Your Score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart</button>
         </div>
     </div>
     <script src="game.js"></script>

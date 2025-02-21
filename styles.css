@@ -1,4 +1,4 @@
-/* Body styles from provided CSS, adapted for game */
+/* Body and other styles remain unchanged */
 body {
     width: 100%;
     height: 100vh;
@@ -15,7 +15,6 @@ body {
     overflow: hidden;
 }
 
-/* Game-specific container */
 #game-container {
     position: relative;
 }
@@ -25,7 +24,6 @@ body {
     background: #fff;
 }
 
-/* UI positioning */
 #ui {
     position: absolute;
     top: 10px;
@@ -44,7 +42,6 @@ body {
     margin: 5px 0;
 }
 
-/* Leaderboard styling */
 #leaderboard {
     margin-top: 20px;
     background: rgba(0, 0, 0, 0.7);
@@ -53,7 +50,6 @@ body {
     font-size: 1rem;
 }
 
-/* Game over popup */
 #gameOverPopup {
     position: absolute;
     top: 50%;
@@ -71,7 +67,7 @@ body {
     display: none;
 }
 
-/* Button styles from provided CSS */
+/* Button styles with smaller size */
 button {
     all: unset;
     cursor: pointer;
@@ -122,7 +118,7 @@ button:hover .button-outer {
     position: relative;
     z-index: 1;
     border-radius: inherit;
-    padding: 1em 1.5em;
+    padding: 0.5em 1em; /* Reduced from 1em 1.5em */
     background-image: linear-gradient(135deg,
             rgba(230, 230, 230, 1),
             rgba(180, 180, 180, 1));
@@ -173,7 +169,7 @@ button .button-inner span {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    font-size: 1rem; /* Adjusted for readability */
+    font-size: 0.8rem; /* Reduced from 1rem */
 }
 
 button:hover .button-inner span {

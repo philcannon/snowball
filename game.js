@@ -31,6 +31,8 @@ let timeElapsed = 0;
 let lastObstacleTime = 0;
 let firstObstacleSpawned = false;
 
+const MAX_SNOWBALL_X = canvas.width / 2; // 400px
+
 // Leaderboard
 let leaderboard = JSON.parse(localStorage.getItem('snowballLeaderboard')) || [];
 
@@ -43,11 +45,11 @@ function startGame() {
     speed = 2;
     timeElapsed = 0;
     obstacles = [];
-    snowflakes = Array(150).fill().map(() => ({  // Increased from 50 to 150
+    snowflakes = Array(150).fill().map(() => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 1.5 + 0.5,  // Reduced range: 0.5-2px (was 1-3px)
-        speed: Math.random() * 1.5 + 0.5    // Reduced range: 0.5-2px/s (was 1-3px)
+        radius: Math.random() * 1.5 + 0.5,
+        speed: Math.random() * 1.5 + 0.5
     }));
     firstObstacleSpawned = false;
     snowball = { x: 100, y: 350, radius: 20, vy: 0, vx: 0 };
@@ -69,16 +71,15 @@ function gameLoop(timestamp) {
 }
 
 function update(delta) {
-    // Snowball physics
+    // Snowball physics (vertical only)
     snowball.vy += gravity;
     snowball.y += snowball.vy;
-    snowball.x += snowball.vx;
-    snowball.vx *= 0.95;
+    // Cap snowball.x to stay in left half
+    snowball.x = Math.min(snowball.x, MAX_SNOWBALL_X);
 
     if (snowball.y + snowball.radius > canvas.height) {
         snowball.y = canvas.height - snowball.radius;
         snowball.vy = 0;
-        snowball.vx = 0;
     }
 
     if (isCharging) {
@@ -88,10 +89,12 @@ function update(delta) {
     // Update snowflakes
     snowflakes.forEach(s => {
         s.y += s.speed;
+        s.x -= speed * 0.5; // Slower scroll for depth
         if (s.y > canvas.height) {
             s.y = -s.radius;
             s.x = Math.random() * canvas.width;
         }
+        if (s.x < -s.radius) s.x = canvas.width + s.radius;
     });
 
     // Obstacle spawning
@@ -110,7 +113,7 @@ function update(delta) {
         lastObstacleTime = timeElapsed;
     }
 
-    // Move obstacles and check collision
+    // Move obstacles
     obstacles.forEach((ob, i) => {
         ob.x -= speed;
         if (ob.x + ob.width < 0) obstacles.splice(i, 1);
@@ -192,4 +195,21 @@ leaderboardButton.addEventListener('click', () => {
     leaderboardDiv.classList.toggle('hidden');
 });
 
-document.addEventListener('keydown'
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !isCharging && snowball.vy === 0) {
+        isCharging = true;
+        jumpCharge = 0;
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space' && isCharging && snowball.vy === 0) {
+        isCharging = false;
+        let chargeFactor = jumpCharge / maxChargeTime;
+        snowball.vy = baseJumpForce + (maxJumpForce - baseJumpForce) * chargeFactor;
+        // No vx boost; scrolling handled by background
+    }
+});
+
+// Initial leaderboard display
+displayLeaderboard();

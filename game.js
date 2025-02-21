@@ -17,17 +17,18 @@ const restartButton = document.getElementById('restartButton');
 let snowball = { x: 100, y: 350, radius: 20, vy: 0, vx: 0 };
 let gravity = 0.5;
 let baseJumpForce = -12;
-let maxJumpForce = -20; // Max height for charged jump
+let maxJumpForce = -20;
 let jumpCharge = 0;
-let maxChargeTime = 500; // Max charge time in ms
+let maxChargeTime = 500;
 let isCharging = false;
-let speed = 2; // Slower initial speed
+let speed = 2;
 let obstacles = [];
 let score = 0;
 let gameRunning = false;
 let lastTime = 0;
-let timeElapsed = 0; // Track game time for difficulty
-let lastObstacleTime = 0; // Ensure spacing
+let timeElapsed = 0;
+let lastObstacleTime = 0;
+let firstObstacleSpawned = false;
 
 // Leaderboard
 let leaderboard = JSON.parse(localStorage.getItem('snowballLeaderboard')) || [];
@@ -41,6 +42,7 @@ function startGame() {
     speed = 2;
     timeElapsed = 0;
     obstacles = [];
+    firstObstacleSpawned = false;
     snowball = { x: 100, y: 350, radius: 20, vy: 0, vx: 0 };
     requestAnimationFrame(gameLoop);
 }
@@ -52,8 +54,7 @@ function gameLoop(timestamp) {
     lastTime = timestamp;
     timeElapsed += delta;
 
-    // Increase speed over time (slower initial ramp)
-    speed = 2 + timeElapsed * 0.05; // Caps around 5-6 after a few minutes
+    speed = 2 + timeElapsed * 0.05;
 
     update(delta);
     draw();
@@ -65,26 +66,32 @@ function update(delta) {
     snowball.vy += gravity;
     snowball.y += snowball.vy;
     snowball.x += snowball.vx;
-    snowball.vx *= 0.95; // Horizontal friction
+    snowball.vx *= 0.95;
 
     if (snowball.y + snowball.radius > canvas.height) {
         snowball.y = canvas.height - snowball.radius;
         snowball.vy = 0;
-        snowball.vx = 0; // Stop horizontal movement on ground
+        snowball.vx = 0;
     }
 
     if (isCharging) {
         jumpCharge = Math.min(jumpCharge + delta * 1000, maxChargeTime);
     }
 
-    // Spawn obstacles with difficulty progression
-    let spawnChance = 0.01 + timeElapsed * 0.005; // Increases over time
-    let minGap = Math.max(200 - timeElapsed * 10, 100); // Wider gaps early
-    if (
-        Math.random() < spawnChance &&
-        (timeElapsed - lastObstacleTime) * speed > minGap
-    ) {
-        let maxSize = Math.min(40 + timeElapsed * 5, 80); // Grows over time
+    // Obstacle spawning
+    let spawnChance = 0.01 + timeElapsed * 0.005;
+    let minGap = Math.max(200 - timeElapsed * 10, 100);
+
+    if (!firstObstacleSpawned && score >= 50 && score <= 80) {
+        // Spawn first obstacle between score 50 and 80
+        if (Math.random() < 0.1) { // Higher chance for first spawn
+            let size = Math.random() * 20 + 20; // Small initial obstacle
+            obstacles.push({ x: canvas.width, y: canvas.height - size, width: size, height: size });
+            lastObstacleTime = timeElapsed;
+            firstObstacleSpawned = true;
+        }
+    } else if (firstObstacleSpawned && Math.random() < spawnChance && (timeElapsed - lastObstacleTime) * speed > minGap) {
+        let maxSize = Math.min(40 + timeElapsed * 5, 80);
         let size = Math.random() * (maxSize - 20) + 20;
         obstacles.push({ x: canvas.width, y: canvas.height - size, width: size, height: size });
         lastObstacleTime = timeElapsed;
@@ -176,7 +183,7 @@ document.addEventListener('keyup', (e) => {
         isCharging = false;
         let chargeFactor = jumpCharge / maxChargeTime;
         snowball.vy = baseJumpForce + (maxJumpForce - baseJumpForce) * chargeFactor;
-        snowball.vx = speed + 5 * chargeFactor; // Horizontal boost
+        snowball.vx = speed + 5 * chargeFactor;
     }
 });
 

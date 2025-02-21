@@ -1,191 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Snowball Game</title>
-    <style>
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #1a1a1a;
-        }
-        canvas {
-            border: 2px solid #333;
-            image-rendering: pixelated;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Snowball</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <script>
-        class Snowball {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.size = 1.0; // Size multiplier
-                this.velocity = { x: 0, y: 0 };
-                this.onGround = false;
-            }
-
-            draw(ctx) {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 15 * this.size, 0, Math.PI * 2);
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fill();
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-            }
-        }
-
-        class Obstacle {
-            constructor(type, x, width) {
-                this.type = type; // 'fire' or 'crack'
-                this.x = x;
-                this.y = 100; // Ground level for simplicity
-                this.width = width;
-                this.height = type === 'fire' ? 20 : 5;
-            }
-
-            draw(ctx) {
-                if (this.type === 'fire') {
-                    ctx.fillStyle = '#FF4500';
-                    ctx.beginPath();
-                    ctx.moveTo(this.x, this.y);
-                    ctx.lineTo(this.x + this.width / 2, this.y - this.height);
-                    ctx.lineTo(this.x + this.width, this.y);
-                    ctx.closePath();
-                    ctx.fill();
-                } else if (this.type === 'crack') {
-                    ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(this.x, this.y);
-                    ctx.lineTo(this.x + this.width / 2, this.y + this.height);
-                    ctx.lineTo(this.x + this.width, this.y);
-                    ctx.stroke();
-                }
-            }
-        }
-
-        class Game {
-            constructor() {
-                this.canvas = document.getElementById('gameCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                
-                this.canvas.width = 400;
-                this.canvas.height = 150;
-                this.canvas.style.width = '800px';
-                this.canvas.style.height = '300px';
-
-                this.frameCount = 0;
-                this.scrollSpeed = 1;
-                this.snowball = new Snowball(50, 100);
-                this.obstacles = [];
-
-                // Physics constants
-                this.gravity = 0.5;
-                this.jumpForce = -8;
-
-                // Input handling
-                document.addEventListener('keydown', (e) => {
-                    if (e.code === 'Space' && this.snowball.onGround) {
-                        this.snowball.velocity.y = this.jumpForce;
-                        this.snowball.onGround = false;
-                    }
-                });
-
-                // Start game loop
-                requestAnimationFrame(this.gameLoop.bind(this));
-            }
-
-            spawnObstacle() {
-                if (this.frameCount % 100 === 0) { // Spawn every 100 frames
-                    const type = Math.random() < 0.5 ? 'fire' : 'crack';
-                    const width = type === 'fire' ? 15 : 20 + Math.random() * 30;
-                    this.obstacles.push(new Obstacle(type, this.canvas.width, width));
-                }
-            }
-
-            update() {
-                this.frameCount++;
-
-                // Gradual speed increase
-                this.scrollSpeed = 1 + Math.min(this.frameCount / 1000, 4);
-
-                // Update snowball physics
-                this.snowball.velocity.y += this.gravity;
-                this.snowball.y += this.snowball.velocity.y;
-
-                // Ground collision
-                if (this.snowball.y >= 100 - 15 * this.snowball.size) {
-                    this.snowball.y = 100 - 15 * this.snowball.size;
-                    this.snowball.velocity.y = 0;
-                    this.snowball.onGround = true;
-                }
-
-                // Update obstacles
-                this.obstacles.forEach(obstacle => {
-                    obstacle.x -= this.scrollSpeed;
-
-                    // Check collision
-                    if (this.snowball.x + 15 * this.snowball.size > obstacle.x &&
-                        this.snowball.x - 15 * this.snowball.size < obstacle.x + obstacle.width &&
-                        this.snowball.y + 15 * this.snowball.size > obstacle.y) {
-
-                        if (obstacle.type === 'fire' || (obstacle.type === 'crack' && this.snowball.y + 15 * this.snowball.size >= obstacle.y)) {
-                            this.endGame();
-                        }
-                    }
-                });
-
-                // Remove passed obstacles
-                this.obstacles = this.obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
-
-                // Spawn new obstacles
-                this.spawnObstacle();
-            }
-
-            endGame() {
-                alert('Game Over!');
-                window.location.reload();
-            }
-
-            draw() {
-                // Clear canvas
-                this.ctx.fillStyle = '#87CEEB';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // Draw ground
-                this.ctx.fillStyle = '#FFFFFF';
-                this.ctx.fillRect(0, 100, this.canvas.width, 50);
-
-                // Draw obstacles
-                this.obstacles.forEach(obstacle => {
-                    obstacle.draw(this.ctx);
-                });
-
-                // Draw snowball
-                this.snowball.draw(this.ctx);
-
-                // Draw score
-                this.ctx.fillStyle = '#000';
-                this.ctx.font = '12px Arial';
-                this.ctx.fillText(`Size: ${(this.snowball.size).toFixed(1)}`, 10, 20);
-            }
-
-            gameLoop() {
-                this.update();
-                this.draw();
-                requestAnimationFrame(this.gameLoop.bind(this));
-            }
-        }
-
-        window.onload = () => {
-            new Game();
-        };
-    </script>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui">
+            <h1>Snowball</h1>
+            <p>Score: <span id="score">0</span></p>
+            <button id="startButton">Start</button>
+            <div id="leaderboard">
+                <h2>Top 10 Scores</h2>
+                <ol id="leaderboardList"></ol>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
 </body>
 </html>

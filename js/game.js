@@ -2,7 +2,7 @@
 const levels = [
     {
         terrain: [
-            { x: 0, y: 500 }, { x: 200, y: 400 }, { x: 400, y: 500 },
+            { x: 0, y: 500 }, { x: 200, y: 450 }, { x: 400, y: 500 }, // Adjusted first segment to slope down
             { x: 600, y: 300 }, { x: 800, y: 400 }, { x: 1000, y: 500 }
         ],
         start: { x: 50, y: 450 },
@@ -10,7 +10,7 @@ const levels = [
     },
     {
         terrain: [
-            { x: 0, y: 500 }, { x: 150, y: 450 }, { x: 300, y: 500 },
+            { x: 0, y: 500 }, { x: 150, y: 475 }, { x: 300, y: 500 }, // Adjusted first segment to slope down
             { x: 450, y: 350 }, { x: 600, y: 500 }, { x: 800, y: 400 }, { x: 1000, y: 500 }
         ],
         start: { x: 50, y: 450 },
@@ -44,8 +44,11 @@ function create() {
     // Snowball
     snowball = this.matter.add.gameObject(
         this.add.circle(level.start.x, level.start.y, 20, 0xFFFFFF),
-        { shape: 'circle', radius: 20, friction: 0.5, restitution: 0.3 }
+        { shape: 'circle', radius: 20, friction: 0.2, restitution: 0.4 } // Lower friction for smoother rolling
     );
+
+    // Set initial forward velocity
+    this.matter.body.setVelocity(snowball.body, { x: 5, y: 0 }); // Initial push to the right
 
     // Camera
     this.cameras.main.setBounds(0, 0, level.finish.x + 100, config.height);
@@ -68,6 +71,11 @@ function update() {
 
     if (snowball.x > levels[this.currentLevel].finish.x) {
         levelComplete.call(this);
+    }
+
+    // Ensure minimal forward momentum (prevent backward rolling)
+    if (snowball.body.velocity.x < 2) {
+        this.matter.body.setVelocity(snowball.body, { x: 2, y: snowball.body.velocity.y });
     }
 }
 
@@ -127,7 +135,7 @@ const config = {
         default: 'matter',
         matter: {
             gravity: { y: 1 },
-            debug: false // Set to true for debugging physics
+            debug: false
         }
     },
     scene: {

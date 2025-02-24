@@ -2,28 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Snowball</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Snowball Scroller</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div id="ui">
-            <h1>Snowball</h1>
-            <p>Score: <span id="score">0</span></p>
-            <button id="startButton">Start</button>
-            <button id="leaderboardButton">Show Leaderboard</button>
-            <div id="leaderboard" class="hidden">
-                <h2>Top 10 Scores</h2>
-                <ol id="leaderboardList"></ol>
-            </div>
-        </div>
-        <div id="gameOverPopup" class="hidden">
-            <h2>Game Over</h2>
-            <p>Your Score: <span id="finalScore">0</span></p>
-            <button id="restartButton">Restart</button>
-        </div>
-    </div>
-    <script src="game.js"></script>
+    <div id="game-container"></div>
+    <script src="js/phaser.min.js"></script>
+    <script src="js/game.js"></script>
 </body>
 </html>

@@ -2,18 +2,18 @@
 const levels = [
     {
         terrain: [
-            { x: 0, y: 500 }, { x: 200, y: 350 }, { x: 400, y: 500 }, // Steeper initial slope
+            { x: 0, y: 400 }, { x: 200, y: 500 }, { x: 400, y: 450 }, // Downward slope at start
             { x: 600, y: 300 }, { x: 800, y: 400 }, { x: 1000, y: 500 }
         ],
-        start: { x: 50, y: 450 },
+        start: { x: 50, y: 350 }, // Adjusted start to match downward slope
         finish: { x: 1000, y: 500 }
     },
     {
         terrain: [
-            { x: 0, y: 500 }, { x: 150, y: 400 }, { x: 300, y: 500 }, // Steeper initial slope
+            { x: 0, y: 400 }, { x: 150, y: 500 }, { x: 300, y: 450 }, // Downward slope at start
             { x: 450, y: 350 }, { x: 600, y: 500 }, { x: 800, y: 400 }, { x: 1000, y: 500 }
         ],
-        start: { x: 50, y: 450 },
+        start: { x: 50, y: 350 }, // Adjusted start to match downward slope
         finish: { x: 1000, y: 500 }
     }
 ];
@@ -44,21 +44,17 @@ function create() {
     // Snowball
     snowball = this.matter.add.gameObject(
         this.add.circle(level.start.x, level.start.y, 20, 0xFFFFFF),
-        { shape: 'circle', radius: 20, friction: 0.1, restitution: 0.5 } // Even lower friction, higher bounce
+        { shape: 'circle', radius: 20, friction: 0.1, restitution: 0.5 }
     );
-
-    // Stronger initial forward velocity
-    this.matter.body.setVelocity(snowball.body, { x: 10, y: 0 }); // Increased from 5 to 10
 
     // Camera
     this.cameras.main.setBounds(0, 0, level.finish.x + 100, config.height);
     this.cameras.main.startFollow(snowball);
 
-    // Input
-    this.input.keyboard.on('keydown-SPACE', () => snowball.body.gravityScale = 2);
-    this.input.keyboard.on('keyup-SPACE', () => snowball.body.gravityScale = 1);
-    this.input.on('pointerdown', () => snowball.body.gravityScale = 2);
-    this.input.on('pointerup', () => snowball.body.gravityScale = 1);
+    // Input: Spacebar jumps with forward momentum
+    this.input.keyboard.on('keydown-SPACE', () => {
+        this.matter.body.setVelocity(snowball.body, { x: 8, y: -5 }); // Forward and upward jump
+    });
 
     // Timer
     this.timer = this.time.addEvent({ delay: 30000, callback: onTimerEnd, callbackScope: this });
@@ -71,13 +67,6 @@ function update() {
 
     if (snowball.x > levels[this.currentLevel].finish.x) {
         levelComplete.call(this);
-    }
-
-    // Prevent backward motion and ensure forward momentum
-    const velocity = snowball.body.velocity;
-    if (velocity.x < 3) { // Increased minimum from 2 to 3
-        this.matter.body.applyForce(snowball.body, snowball.body.position, { x: 0.005, y: 0 });
-        this.matter.body.setVelocity(snowball.body, { x: Math.max(velocity.x, 3), y: velocity.y });
     }
 }
 
@@ -137,7 +126,7 @@ const config = {
         default: 'matter',
         matter: {
             gravity: { y: 1 },
-            debug: false // Set to true to debug physics
+            debug: false // Set to true to debug physics if needed
         }
     },
     scene: {
